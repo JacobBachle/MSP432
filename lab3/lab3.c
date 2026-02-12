@@ -164,7 +164,7 @@ void toggleColored(void) {
 
 //******************************************************************************
 // Name of Function: toggleLEDs
-// Description: Toggles colored LED 1
+// Description: Toggles colored LED 1 at selected frequency
 // Input Parameters: void
 // Return: none
 // Author: Jacob Bachle
