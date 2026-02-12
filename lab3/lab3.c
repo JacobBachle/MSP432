@@ -1,3 +1,13 @@
+//******************************************************************************
+// Main Comment Header:
+// Jacob Bachle
+// Current Semester: Spring 2026
+// Lab Section: 1
+// Date Created: 2/3/26
+// S1 changes LED 1 frequency while S2 changes LED 2 colored LED colors while
+// toggling at 1 Hz
+//******************************************************************************
+
 /* DriverLib Includes */
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
@@ -38,6 +48,14 @@ Timer_A_UpModeConfig timerConfig;
 const uint32_t TIMERCOLOR = TIMER_A0_BASE;
 const uint32_t TIMER = TIMER_A1_BASE;
 
+//******************************************************************************
+// Name of Function: main
+// Description: S1 changes LED 1 frequency while S2 changes LED 2 colored LED
+// colors while toggling at 1 Hz
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 int main(void) {
     MAP_WDT_A_holdTimer();
 
@@ -59,6 +77,13 @@ int main(void) {
     while (1);   // Required but never executed
 }
 
+//******************************************************************************
+// Name of Function: configureGPIO
+// Description: Configures LED1, LED2, and S1,S2
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void configureGPIO(void) {
     /* LED1 (P1.0) */
     GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
@@ -72,6 +97,13 @@ void configureGPIO(void) {
     GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1 | GPIO_PIN4);
 }
 
+//******************************************************************************
+// Name of Function: configureInputInterrupts
+// Description: Configures S1 and S2 interupts
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void configureInputInterrupts(void) {
     GPIO_interruptEdgeSelect(GPIO_PORT_P1, GPIO_PIN1 | GPIO_PIN4, GPIO_HIGH_TO_LOW_TRANSITION);
 
@@ -86,8 +118,14 @@ void configureInputInterrupts(void) {
     MAP_GPIO_registerInterrupt(GPIO_PORT_P1, pushButtons);
 }
 
-
-
+//******************************************************************************
+// Name of Function: configTimer1
+// Description: Configures timer and calls function once timer counts to CCR0
+// Input Parameters: uint32_t timer,uint16_t clockPeriod,uint16_t clockDivider,
+// void* callback
+// Return: calls function "callback" when timer is reset
+// Author: Jacob Bachle
+//******************************************************************************
 void configTimer1(uint32_t timer,uint16_t clockPeriod,uint16_t clockDivider, void* callback) {
     Timer_A_stopTimer(timer);
 
@@ -106,7 +144,13 @@ void configTimer1(uint32_t timer,uint16_t clockPeriod,uint16_t clockDivider, voi
     Timer_A_startCounter(timer, TIMER_A_UP_MODE);
 }
 
-
+//******************************************************************************
+// Name of Function: toggleColored
+// Description: Toggles colored LED 2
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void toggleColored(void) {
     Timer_A_clearInterruptFlag(TIMERCOLOR);
 
@@ -118,6 +162,13 @@ void toggleColored(void) {
     }
 }
 
+//******************************************************************************
+// Name of Function: toggleLEDs
+// Description: Toggles colored LED 1
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void toggleLEDs(void) {
     Timer_A_clearInterruptFlag(TIMER);
 
@@ -154,6 +205,13 @@ void toggleLEDs(void) {
     }
 }
 
+//******************************************************************************
+// Name of Function: servicePatternState
+// Description: Sets LED 2 output based on global current patternState
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void servicePatternState(void) {
     //GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2);
 
@@ -176,11 +234,25 @@ void servicePatternState(void) {
     }
 }
 
+//******************************************************************************
+// Name of Function: pushButtons
+// Description: Calls helper functions to update global states
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void pushButtons() {
     updateFrequencyState();
     updatePatternState();
 }
 
+//******************************************************************************
+// Name of Function: updateFrequencyState
+// Description: Updates frequency state based on switch input
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void updateFrequencyState(void) {
     if (GPIO_getInterruptStatus(GPIO_PORT_P1, GPIO_PIN1)) {
         GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1);
@@ -196,7 +268,13 @@ void updateFrequencyState(void) {
     }
 }
 
-/* Update Pattern State (S2) */
+//******************************************************************************
+// Name of Function: updatePatternState
+// Description: Updates pattern state based on switch input
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void updatePatternState(void) {
     if (GPIO_getInterruptStatus(GPIO_PORT_P1, GPIO_PIN4))
     {
@@ -212,6 +290,13 @@ void updatePatternState(void) {
     }
 }
 
+//******************************************************************************
+// Name of Function: resetTimers
+// Description: Reset all timer bases, ensures all timers are in sync
+// Input Parameters: void
+// Return: none
+// Author: Jacob Bachle
+//******************************************************************************
 void resetTimers(void) {
     // Stop both timers
     Timer_A_stopTimer(TIMER);
