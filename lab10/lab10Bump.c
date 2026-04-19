@@ -1,13 +1,15 @@
-/*
- * Jacob Bachle and Rafael Cano
- * Spring 2026
- * Section 001
- * March 10th, 2026
- * Using the sensors, the robot follows a line, and turns corners. The LEDs change states accordingly.
- *
- * Certification code: 1775003944
- *  Time completed in: 59:50
- */
+//******************************************************************************
+// Main Comment Header:
+// Jacob Bachle and Rafael Cano
+// Current Semester: Spring 2026
+// Lab Section: 1
+// Date Created: 3/10/26
+// Description:
+// Using the sensors, the robot follows a line and turns corners.
+// LEDs indicate robot state and sensor behavior.
+// Certification Code: 1775003944
+// Completion Time: 59:50
+//******************************************************************************
 
 /* DriverLib Includes */
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
@@ -37,7 +39,7 @@ buttonStates b0ButtonState, bnButtonState;
 
 volatile uint8_t lineSensorData = 0x00;
 enum {LOST, TRACKING} currentState;
-enum {TL, HL, SL, S, SR, HR, TR} turnRate;
+enum {TurnLeft, HardRight, SlightLeft, Stright, SlightRight, HardRight, TurnRight} turnRate;
 
 
 //Function Prototypes
@@ -114,13 +116,13 @@ int main(void)
     }
 }
 
-/*
- * config432IO
- * Configures the Launchpad LEDs
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: config432IO
+// Description: Configures LaunchPad LED1 and RGB LED2 as outputs
+// Input Parameters: none
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
 
 //LED config
 void config432IO(void)
@@ -136,13 +138,13 @@ MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2);
 
 }
 
-/*
- * configRobotIO
- * Configures the bumper switches, LEDs, and motors on the robot
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: configRobotIO
+// Description: Configures bumper switches, robot LEDs, and motor GPIO pins
+// Input Parameters: none
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
 
 //Robot Config (LEDs, Bumpers, Motors)
 void configRobotIO(void)
@@ -213,7 +215,7 @@ void readLineSensors(void)
 
 void processLineData(void)
 {
-    static bool ballerina;
+    static bool Spin;
 
     //Check line sensor data for tracking the line or not
     if(lineSensorData == 0)
@@ -223,7 +225,7 @@ void processLineData(void)
     else
     {
         currentState = TRACKING;
-        ballerina = false;
+        Spin = false;
     }
     //Set RED1 LED according to currentState
     if(b0ButtonState == buttonOFF)
@@ -246,7 +248,7 @@ void processLineData(void)
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P1,GPIO_PIN0);
             //Spin 180 degrees
 
-            if(ballerina == false)
+            if(Spin == false)
             {
                 MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
                 MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -257,7 +259,7 @@ void processLineData(void)
                 //__delay_cycles(3000000*0.75); //0.75 sec
                 __delay_cycles(3000000*0.90); //0.75 sec
             }
-            ballerina = true; //do not spin again
+            Spin = true; //do not spin again
             //Move until Tracking
             MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
             MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -294,7 +296,7 @@ void LED2State(void)
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2,GPIO_PIN0|GPIO_PIN2);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2,GPIO_PIN1);
         //Hard Left
-        turnRate = TL;
+        turnRate = TurnLeft;
     }
     else if(rightCount >= 3) //If too many right, Hard Right, Magenta
     {
@@ -308,46 +310,46 @@ void LED2State(void)
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2,GPIO_PIN0|GPIO_PIN1);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2,GPIO_PIN2);
         //Slight Left
-        turnRate = SL;
+        turnRate = SlightLeft;
     }
     else if(rightCount > leftCount) //if more right than left, set LED2 CYAN
     {
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2,GPIO_PIN1|GPIO_PIN2);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2,GPIO_PIN0);
         //Slight Right
-        turnRate = SR;
+        turnRate = SlightRight;
     }
     else if(leftCount >= 1 && rightCount == 0) //if at least one left, and no right, set LED2 RED
     {
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2,GPIO_PIN0);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2,GPIO_PIN1|GPIO_PIN2);
         //Hard Left
-        turnRate = HL;
+        turnRate = HardRight;
     }
     else if(rightCount >= 1 && leftCount == 0) //if at least one right, and no left, set LED2 BLUE
     {
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2,GPIO_PIN2);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2,GPIO_PIN0|GPIO_PIN1);
         //Hard Right
-        turnRate = HR;
+        turnRate = HardRight;
     }
     else if(leftCount == rightCount) //if left and right are equal, set LED2 GREEN
     {
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2,GPIO_PIN1);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2,GPIO_PIN0|GPIO_PIN2);
         //Straight
-        turnRate = S;
+        turnRate = Stright;
     }
 }
 
 
-/*
- * robotLEDState
- * Using the button and motor states, change the LEDs
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: robotLEDState
+// Description: Updates RSLK LEDs based on current motor states
+// Input Parameters: none
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
 
 //LED States
 void robotLEDState(void)
@@ -388,13 +390,13 @@ void robotLEDState(void)
     }
 }
 
-/*
- * Bumper Switches Handler
- * Once an interrupt has occurred, read the interrupt and react accordingly
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: bumperSwitchesHandler
+// Description: Handles bumper switch interrupts and updates button state
+// Input Parameters: none
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
 
 //Bumper ISR
 void bumperSwitchesHandler(void)
@@ -428,18 +430,20 @@ void bumperSwitchesHandler(void)
     }
 }
 
-/*
- * followLine
- * After reading the line sensors, use the data to drive hard left, slight left, straight, slight right, or hard right.
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: followLine
+// Description: Adjusts motor speeds and directions based on turn rate
+// determined from line sensor data
+// Input Parameters: none
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
+
 void followLine(void)
 {
     switch(turnRate)
     {
-    case SL:
+    case SlightLeft:
         //Slow Left Wheel, maintain Right Wheel
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle/SLIGHTTURNVALUE);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -447,7 +451,7 @@ void followLine(void)
         rightMotorState = motorForward;
         motorMotion();
         break;
-    case HL:
+    case HardRight:
         //Reverse Left wheel, Maintain Right Wheel
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -455,7 +459,7 @@ void followLine(void)
         rightMotorState = motorForward;
         motorMotion();
         break;
-    case S:
+    case Stright:
         //Maintain both wheels
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -463,7 +467,7 @@ void followLine(void)
         rightMotorState = motorForward;
         motorMotion();
         break;
-    case HR:
+    case HardRight:
         //Reverse Left Wheel, Maintain Right Wheel
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -471,7 +475,7 @@ void followLine(void)
         rightMotorState = motorReverse;
         motorMotion();
         break;
-    case SR:
+    case SlightRight:
         //Stop Right Wheel, maintain Left Wheel
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle/SLIGHTTURNVALUE);
@@ -479,7 +483,7 @@ void followLine(void)
         rightMotorState = motorForward;
         motorMotion();
         break;
-    case TL:
+    case TurnLeft:
         //Maintain Left wheel, Reverse Right Wheel, Slight Delay
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -488,7 +492,7 @@ void followLine(void)
         motorMotion();
         __delay_cycles(DELAY*2); //200 ms
         break;
-    case TR:
+    case TurnRight:
         //Reverse Left Wheel, Maintain Right Wheel, Slight Delay
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_4,DutyCycle);
         MAP_Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_3,DutyCycle);
@@ -501,13 +505,14 @@ void followLine(void)
 //    Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_UP_MODE);
 }
 
-/*
- * motorMotion
- * Using the motor states, move the robot accordingly
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: motorMotion
+// Description: Controls motor GPIO signals based on motor state (forward,
+// reverse, off, or test)
+// Input Parameters: none
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
 
 //Motor Motion Function
 void motorMotion(void)
@@ -554,13 +559,14 @@ void motorMotion(void)
     }
 }
 
-/*
- * configPWMTimer
- * Configures the PWM timers for the motors
- * Input: none
- * Return: none
- * Author: Nathan Gibbs and Daniel Hickson
- */
+//******************************************************************************
+// Name of Function: configPWMTimer
+// Description: Configures Timer_A PWM for motor control using specified
+// period, divider, duty cycle, and channel
+// Input Parameters: clockPeriod, clockDivider, duty, channel
+// Return: none
+// Author: Jacob Bachle and Rafael Cano
+//******************************************************************************
 
 //Configure PWM Timer
 void configPWMTimer(uint16_t clockPeriod, uint16_t clockDivider, uint16_t duty, uint16_t channel)
